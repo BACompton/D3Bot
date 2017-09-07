@@ -515,13 +515,18 @@ public class MusicManager {
      */
     private String convetDuration(String ytDuraion) {
         String[] durationParts = ytDuraion.substring("PT".length(), ytDuraion.length() - "S".length()).split("[MH]");
+        int[] durations = new int[durationParts.length];
+        
+        int i = 0;
+        for(String s: durationParts)
+            durations[i++] = Integer.parseInt(s);
         
         if(durationParts.length == 3)
-            return String.format(HOUR_TS, (Object[])durationParts);
+            return String.format(HOUR_TS, durations[0], durations[1], durations[2]);
         else if(durationParts.length == 2)
-            return String.format(MIN_TS, (Object[])durationParts);
+            return String.format(MIN_TS, durations[0], durations[1]);
         else
-            return String.format(SEC_TS, (Object[])durationParts);
+            return String.format(SEC_TS, durations[0]);
     }
     
     /*----      Getters & Setters       ----*/
