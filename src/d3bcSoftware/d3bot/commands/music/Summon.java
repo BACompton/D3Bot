@@ -41,7 +41,7 @@ public class Summon implements Command{
     @Override
     public void action(MessageReceivedEvent e, String[] args) {
         Guild guild = e.getGuild();
-        Member user = e.getMember();
+        Member user = e.getMember(), botMember = e.getGuild().getMember(Bot.getBot().getSelfUser());
         VoiceChannel chan = null, 
                 bot = guild.getAudioManager().getConnectedChannel();
         
@@ -53,6 +53,15 @@ public class Summon implements Command{
         // Locates the users active channel.
         } else
             chan = MusicManager.findVoiceChannel(guild, user);
+        
+        // Ensure the bot in the channel
+        if(bot != null) {
+            VoiceChannel check = null;
+            for (Member m: bot.getMembers())
+                if(m.equals(botMember))
+                    check = bot;
+            bot = check;
+        }
         
         // User was not in a VoiceChannel
         if(chan == null) {
