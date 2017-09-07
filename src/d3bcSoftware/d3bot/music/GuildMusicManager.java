@@ -61,10 +61,8 @@ public class GuildMusicManager {
         final Member bot = guild.getMember(Bot.getBot().getSelfUser());
         AudioPlayerManager playerMng = Bot.getMusicManager().getPlayerManager();
         
-        String trackurl = stripUnembeded(url);
-        
         channel.sendMessage(String.format(SEARCH, display)).queue();
-        load(playerMng, channel, display, trackurl, bot, member, guild, (long)0, addPlaylist, true, true);
+        load(playerMng, channel, display, url, bot, member, guild, (long)0, addPlaylist, true, true);
     }
     
     /**
@@ -144,18 +142,6 @@ public class GuildMusicManager {
         if(guild.getAudioManager().getConnectedChannel() == null)
             MusicManager.joinVoiceChannel(MusicManager.findVoiceChannel(guild, user),
                     text);
-    }
-    
-    /**
-     * Removes the umembeded format from urls
-     * @param url The url to embed.
-     * @return an embed url (normal url)
-     */
-    private String stripUnembeded(String url) {
-        if(url.startsWith(Format.UNEMBED_S.toString()))
-            return url.substring(Format.UNEMBED_S.toString().length(), 
-                    url.length() - Format.UNEMBED_E.toString().length());
-        return url;
     }
     
 }
