@@ -9,6 +9,7 @@ import d3bcSoftware.d3bot.Bot;
 import d3bcSoftware.d3bot.Command;
 import d3bcSoftware.d3bot.logging.Emote;
 import d3bcSoftware.d3bot.logging.Format;
+import d3bcSoftware.d3bot.logging.LogState;
 import d3bcSoftware.d3bot.music.GuildMusicManager;
 import d3bcSoftware.d3bot.music.MusicManager;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -135,9 +136,8 @@ public class Play implements Command {
     private String stripUnembed(String url) {
         if(url.startsWith(Format.UNEMBED_S.toString()))
             return url.substring(Format.UNEMBED_S.toString().length(), 
-                    url.length() - Format.UNEMBED_E.toString().length() - 1);
-        else
-            return url;
+                    url.length() - Format.UNEMBED_E.toString().length());
+        return url;
     }
     
 }
