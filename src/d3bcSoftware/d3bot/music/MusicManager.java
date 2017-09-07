@@ -62,7 +62,7 @@ public class MusicManager {
     
     private static final String LOADING_MANAGER = "Loading the music manager.";
     private static final String LOADING_YT = "Loading youtube search";
-    private static final String HOUR_TS = "%d:%02d:%02d", MIN_TS = "%02d:%02d";
+    private static final String HOUR_TS = "%d:%02d:%02d", MIN_TS = "%d:%02d", SEC_TS = "%d";
     private static final String YT_FAIL = "YouTube API failed to build";
     
     private final static String JOIN_VOICE = "Joining " + Format.CODE + "%s" + Format.CODE + " %s";
@@ -514,7 +514,14 @@ public class MusicManager {
      * @return The duration in the form of #:#
      */
     private String convetDuration(String ytDuraion) {
-        return ytDuraion.substring("PT".length(), ytDuraion.length() - "S".length()).replaceAll("[MH]", ":");
+        String[] durationParts = ytDuraion.substring("PT".length(), ytDuraion.length() - "S".length()).split("[MH]");
+        
+        if(durationParts.length == 3)
+            return String.format(HOUR_TS, (Object[])durationParts);
+        else if(durationParts.length == 2)
+            return String.format(MIN_TS, (Object[])durationParts);
+        else
+            return String.format(SEC_TS, (Object[])durationParts);
     }
     
     /*----      Getters & Setters       ----*/
