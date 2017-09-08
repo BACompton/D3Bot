@@ -1,5 +1,6 @@
 package d3bcSoftware.d3bot.commands.music;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.google.api.services.youtube.model.SearchResult;
@@ -9,6 +10,7 @@ import d3bcSoftware.d3bot.Bot;
 import d3bcSoftware.d3bot.Command;
 import d3bcSoftware.d3bot.logging.Format;
 import d3bcSoftware.d3bot.music.GuildMusicManager;
+import d3bcSoftware.d3bot.music.MusicManager;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 
 /**
@@ -42,6 +44,7 @@ public class Search implements Command {
     public void action(MessageReceivedEvent e, String[] args) {
         // Play Item
         if(args.length > 0) {
+            MusicManager music = Bot.getMusicManager();
             boolean playlist = args[0].equalsIgnoreCase("-p");
             int start = playlist ? 1 : 0;
             List<SearchResult> list = null;
@@ -50,21 +53,35 @@ public class Search implements Command {
             // Build the query
             for(int i = start; i < args.length; i++)
                 query += args[i] + " ";
-            list = playlist ? Bot.getMusicManager().searchYouttubePlaylist(query.trim())
-                    : Bot.getMusicManager().searchYoutube(query.trim());
+            list = playlist ? music.searchYouttubePlaylist(query.trim())
+                    : music.searchYoutube(query.trim());
             
             
             e.getChannel().sendMessage(String.format(GuildMusicManager.SEARCH, query)).queue();
             if(list != null && !list.isEmpty()) {
-                String[] details = playlist ? Bot.getMusicManager().getPlaylistLength(list)
-                        : Bot.getMusicManager().getVideoDurations(list); 
+                GuildMusicManager mng = music.getGuildMusicManager(e.getGuild());
+                String[] details = playlist ? music.getPlaylistLength(list)
+                        : music.getVideoDurations(list); 
                 
                 String msg = String.format(RESULT_HEADING, query);
+                List<String> cache = new ArrayList<String>();
+                
                 for(int i = 0; i < list.size(); i++) {
-                    SearchResultSnippet result = list.get(i).getSnippet();
+                    SearchResult result = list.get(i);
+                    SearchResultSnippet snippet = list.get(i).getSnippet();
+                    
+                    // Cache Search
+                    if(playlist) {
+                        cache.add(music.getStartVideoId(result.getId().getPlaylistId()) 
+                                + " " + result.getId().getPlaylistId()); 
+                    } else
+                        cache.add(result.getId().getVideoId());
+                    
+                    // Output
                     msg += String.format(RESULT_ITEM, i+1, details[i],
-                            result.getTitle(), result.getChannelTitle());
+                            snippet.getTitle(), snippet.getChannelTitle());
                 }
+                mng.searches.put(e.getMember(), cache);
                 msg += Format.CODE_BLOCK;
                 e.getChannel().sendMessage(msg).queue();
             } else {

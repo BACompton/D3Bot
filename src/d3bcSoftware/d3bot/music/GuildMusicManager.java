@@ -1,6 +1,8 @@
 package d3bcSoftware.d3bot.music;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
@@ -40,6 +42,7 @@ public class GuildMusicManager {
     public final AudioPlayer player;
     public final TrackScheduler scheduler;
     public final AudioPlayerSendHandler sendHandler;
+    public final Map<Member, List<String>> searches;
     
     /*----      Constructors       ----*/
     
@@ -52,16 +55,20 @@ public class GuildMusicManager {
         scheduler = new TrackScheduler(player);
         sendHandler = new AudioPlayerSendHandler(player);
         player.addListener(scheduler);
+        searches = new HashMap<Member, List<String>>();
     }
     
     /*----      Helpers       ----*/
     
-    public void loadAndPlay(TextChannel channel, String display, final String url, boolean addPlaylist, final Member member) {
+    public void loadAndPlay(TextChannel channel, String display, final String url, boolean addPlaylist, final Member member, boolean search) {
         final Guild guild = channel.getGuild();
         final Member bot = guild.getMember(Bot.getBot().getSelfUser());
         AudioPlayerManager playerMng = Bot.getMusicManager().getPlayerManager();
         
-        channel.sendMessage(String.format(SEARCH, display)).queue();
+        if(search)
+            channel.sendMessage(String.format(SEARCH, display)).queue();
+        else
+            channel.sendMessage(display).queue();
         load(playerMng, channel, display, url, bot, member, guild, (long)0, addPlaylist, true, true);
     }
     

@@ -9,7 +9,6 @@ import d3bcSoftware.d3bot.Bot;
 import d3bcSoftware.d3bot.Command;
 import d3bcSoftware.d3bot.logging.Emote;
 import d3bcSoftware.d3bot.logging.Format;
-import d3bcSoftware.d3bot.logging.LogState;
 import d3bcSoftware.d3bot.music.GuildMusicManager;
 import d3bcSoftware.d3bot.music.MusicManager;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
@@ -29,6 +28,7 @@ public class Play implements Command {
     
     private final static String RESUME = Emote.PLAY + " Resuming the music player";
     private final static String PLAYING = "Player is already playing";
+    public final static String SELECT_SEARCH = Emote.OK + " Selecting %d result from last search";
     private final static String EMPTY_QUEUE = "The queue is currently empty.";
     private final static String INDEX_ERROR = Emote.X + " Only indices from 1-%d are supported.";
     private final static String EMPTY_QUERY = Emote.X + " Either a link or query is required to queue a song.";
@@ -51,7 +51,8 @@ public class Play implements Command {
         
         // Play Item
         if(args.length > 0) {
-            boolean playlist = args[0].equalsIgnoreCase("-p");
+            boolean playlist = args[0].equalsIgnoreCase("-p"),
+                    outSearch = true;
             int start = playlist ? 1 : 0;
             String query = stripUnembed(args[start]);
             String url = stripUnembed(args[start]);
@@ -82,8 +83,21 @@ public class Play implements Command {
                         list = Bot.getMusicManager().searchYoutube(query.trim());
                     else
                         list = Bot.getMusicManager().searchYouttubePlaylist(query.trim());
-                } else
-                    e.getChannel().sendMessage(EMPTY_QUERY).queue();
+                } else {
+                    List<String> search = mng.searches.get(e.getMember());
+                    
+                    if(search != null && index < search.size()) { // Quick select from last search
+                        String[] ids = search.get(index).split(" ");
+                        outSearch = false;
+                        
+                        query = String.format(SELECT_SEARCH, index+1);
+                        if(playlist)
+                            url = String.format(PLAYLIST_LINK, ids[0], ids[1]);
+                        else
+                            url = String.format(YT_LINK, ids[0]);
+                    } else
+                        e.getChannel().sendMessage(EMPTY_QUERY).queue();
+                }
                 
                 if(list != null && !list.isEmpty()) {
                     ResourceId rID = list.get(index).getId();
@@ -96,7 +110,8 @@ public class Play implements Command {
                 }
             }
             
-            mng.loadAndPlay(e.getTextChannel(), query, url, playlist, e.getMember());
+            mng.searches.remove(e.getMember());
+            mng.loadAndPlay(e.getTextChannel(), query, url, playlist, e.getMember(), outSearch);
         // Check for DJ
         } else if(MusicManager.isDJ(e.getMember())) {
             if(mng.player.getPlayingTrack() == null) 

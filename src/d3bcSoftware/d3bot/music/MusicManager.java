@@ -152,6 +152,9 @@ public class MusicManager {
                 
             } catch (GeneralSecurityException | IOException e) {
                 youtubeSearch = null;
+                youtubePlaylist = null;
+                youtubePlaylistItem = null;
+                youtubeVideo = null;
                 Bot.getLogger().serverLog(LogState.WARNING, YT_FAIL);
             }
         }
