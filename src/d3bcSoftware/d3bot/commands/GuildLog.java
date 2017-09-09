@@ -41,7 +41,7 @@ public class GuildLog implements Command {
     
     private final static String PERM_WARNING = Emote.X + " Administrator permission required to preform this action.";
     private final static String ACTION_UNKN = Emote.QUESTION_MARK 
-            + "Unknow action. Please refrer the following usage.\n\n%s";
+            + "Unknown action. Please refer the following usage.\n\n%s";
     private final static String SET_CHANNEL = Emote.CHECK + " Updated logging channel from " 
             + Format.CODE + "%s" + Format.CODE + " to " + Format.CODE + "%s" + Format.CODE + ".";
     private final static String REMOVED_CHANNEL = Emote.CHECK + " Removed Guild's Logging channel.";

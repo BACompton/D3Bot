@@ -21,7 +21,8 @@ public class Search implements Command {
     /*----      Constants       ----*/
     
     private final static String USAGE = "%s%s [-p] <query> " + Format.CODE_BLOCK + "%s" + Format.CODE_BLOCK;
-    private final static String DESC = "Lists the search results from a YouTube query.";
+    private final static String DESC = "Lists the search results from a YouTube query.\n\n"
+            + "-p: Flags the commnad to support playlist loading and exclusives searchs for playlists";
     private final static String HANDLE = "search";
     
     private final static String EMPTY_QUERY = "The commands requires a query. Please refer to the following usage:\n%s";

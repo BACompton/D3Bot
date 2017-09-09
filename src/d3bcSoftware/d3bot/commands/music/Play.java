@@ -28,7 +28,7 @@ public class Play implements Command {
     
     private final static String RESUME = Emote.PLAY + " Resuming the music player";
     private final static String PLAYING = "Player is already playing";
-    public final static String SELECT_SEARCH = Emote.OK + " Selecting %d result from last search";
+    public final static String SELECT_SEARCH = Emote.OK + " Selecting the result %d from last search";
     private final static String EMPTY_QUEUE = "The queue is currently empty.";
     private final static String INDEX_ERROR = Emote.X + " Only indices from 1-%d are supported.";
     private final static String EMPTY_QUERY = Emote.X + " Either a link or query is required to queue a song.";
