@@ -8,6 +8,7 @@ import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -77,6 +78,7 @@ public class MusicManager {
     
     private static final int SECS = 60, MINS = 60, MS_IN_SEC = 1000;
     private static final int MAX_CONTENT = 50;
+    private static final char[] YT_IDS = {'H', 'M', 'S'};
     public static final int DEF_VOL = 35;
     
     private enum Setting {
@@ -340,8 +342,14 @@ public class MusicManager {
         String ids = "";
         
         // Build ids
-        for(SearchResult result: results)
-            ids += result.getId().getVideoId() + ",";
+        for(int index = 0; index < results.size(); index++) {
+            SearchResult result = results.get(index);
+            
+            if(result.getId() != null && result.getId().getVideoId() != null)
+                ids += result.getId().getVideoId() + ",";
+            else
+                results.remove(index);
+        }
         ids = ids.substring(0, ids.length() - ",".length());
         
         if(youtubeVideo != null || results.size() < MAX_CONTENT) {
@@ -353,7 +361,7 @@ public class MusicManager {
                 
                 for(int i = 0; i < durations.length; i++) {
                     String dur = response.getItems().get(i).getContentDetails().getDuration();
-                    durations[i] = convetDuration(dur);
+                    durations[i] = convertDuration(dur);
                 }
                 return durations;     
                 
@@ -516,20 +524,29 @@ public class MusicManager {
      * @param ytDuraion The YouTube duration
      * @return The duration in the form of #:#
      */
-    private String convetDuration(String ytDuraion) {
-        String[] durationParts = ytDuraion.substring("PT".length(), ytDuraion.length() - "S".length()).split("[MH]");
-        int[] durations = new int[durationParts.length];
+    private String convertDuration(String ytDuraion) {
+        String duration = ytDuraion.substring("PT".length(), ytDuraion.length());
+                
+        List<Integer> durations = new ArrayList<Integer>();
         
-        int i = 0;
-        for(String s: durationParts)
-            durations[i++] = Integer.parseInt(s);
+        boolean add = false;
+        for(char c: YT_IDS) {
+            int index = duration.indexOf(c);
+            
+            if(index >= 0) {
+                durations.add(Integer.parseInt(duration.substring(0, index)));
+                duration = duration.substring(index+1);
+                add = true;
+            } else if(add)
+                durations.add(0);
+        }
         
-        if(durationParts.length == 3)
-            return String.format(HOUR_TS, durations[0], durations[1], durations[2]);
-        else if(durationParts.length == 2)
-            return String.format(MIN_TS, durations[0], durations[1]);
+        if(durations.size() == 3)
+            return String.format(HOUR_TS, durations.get(0), durations.get(1), durations.get(2));
+        else if(durations.size() == 2)
+            return String.format(MIN_TS, durations.get(0), durations.get(1));
         else
-            return String.format(SEC_TS, durations[0]);
+            return String.format(SEC_TS, durations.get(0));
     }
     
     /*----      Getters & Setters       ----*/
