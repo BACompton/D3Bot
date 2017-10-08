@@ -2,6 +2,7 @@ package d3bcSoftware.d3bot.commands.voice;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import d3bcSoftware.d3bot.Bot;
 import d3bcSoftware.d3bot.Command;
@@ -10,9 +11,11 @@ import d3bcSoftware.d3bot.logging.Format;
 import d3bcSoftware.d3bot.voice.GuildVoiceManager;
 import d3bcSoftware.d3bot.voice.VoiceManager;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Category;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.core.requests.restaction.ChannelAction;
 
 /**
  * Creates a private voice channel.
@@ -34,6 +37,10 @@ public class Voice implements Command {
     private final static String SET_USER = Emote.OK + " Set private voice channel default user limit to %d.";
     private final static String DISPLAY_USER = "Default user limit: " + Format.CODE + "%d" + Format.CODE;
     
+    private final static String SET_CAT = Emote.OK + " Set private voice channel category to " 
+            + Format.CODE + "%s" + Format.CODE + ".";
+    private final static String NO_CAT = "No category found for " + Format.CODE + "%s" + Format.CODE + ".";
+    
     /**
      * Details actions that are supported within the voice command.
      * @author Boyd Compton
@@ -44,6 +51,8 @@ public class Voice implements Command {
         LIMIT("limit", "Sets the limit of private channels a person can have "
                 + "(Requires permission: " + VoiceManager.PERM.getName() + ")."),
         USER("user", "Sets the default user limit of private channels "
+                + "(Requires permission: " + VoiceManager.PERM.getName() + ")."),
+        CATEGORY("category", "Sets the category where voice channels will be created "
                 + "(Requires permission: " + VoiceManager.PERM.getName() + ").");
         
         /*----      Constants       ----*/
@@ -145,8 +154,8 @@ public class Voice implements Command {
             limit(e, args);
         else if(a == Action.USER)
             user(e, args);
-        
-        
+        else if(a == Action.CATEGORY)
+            setCategory(e, args);
     }
     
     @Override
@@ -193,9 +202,14 @@ public class Voice implements Command {
                 if(index > 0)
                     name += String.format(indexFormat, index);
             }
+            ChannelAction vcAct = g.getController().createVoiceChannel(name);
+            Category cat = mng.getCategory();
             
-            VoiceChannel vc =(VoiceChannel) g.getController().createVoiceChannel(name)
-                    .setUserlimit(mng.getUserLimit())
+            if(cat != null) {
+                vcAct.setParent(cat);
+            }
+            
+            VoiceChannel vc =(VoiceChannel) vcAct.setUserlimit(mng.getUserLimit())
                     .addPermissionOverride(e.getMember(), allow, deny).complete();
             mng.addMemebrVoice(e.getMember(), vc);
             voice.getListener().spawn(vc);
@@ -241,6 +255,35 @@ public class Voice implements Command {
             } catch(IndexOutOfBoundsException ignored) {
                 e.getChannel().sendMessage(String.format(DISPLAY_USER, mng.getUserLimit())).queue();
             }
+        } else
+            e.getChannel().sendMessage(VoiceManager.PERM_MSG).queue();
+    }
+    
+    private void setCategory(MessageReceivedEvent e, String[] args) {
+        GuildVoiceManager mng = Bot.getVoiceManager().getManager(e.getGuild());
+        
+        if(e.getMember().hasPermission(VoiceManager.PERM)) {
+            String name = "";
+            
+            for(int i = 1; i < args.length; i++)
+                name += " " + args[i];
+            
+            if(!name.isEmpty()) {
+                name = name.substring(1);
+                List<Category> cats = e.getGuild().getCategoriesByName(name, true);
+                
+                if(cats.size() > 0) {
+                    mng.setCategory(cats.get(0));
+                    e.getChannel().sendMessage(String.format(SET_CAT, mng.getCategory().getName())).queue();
+                } else {
+                    e.getChannel().sendMessage(String.format(NO_CAT, name)).queue();
+                }
+                    
+            } else {
+                mng.setCategory(null);
+                e.getChannel().sendMessage(String.format(SET_CAT, "none")).queue();
+            }
+                
         } else
             e.getChannel().sendMessage(VoiceManager.PERM_MSG).queue();
     }

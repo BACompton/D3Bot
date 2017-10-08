@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.dv8tion.jda.core.entities.Category;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
 
@@ -19,16 +20,22 @@ public class GuildVoiceManager {
     
     private int limit, user;
     private HashMap<Member, List<VoiceChannel>> voice;
+    private Category cat;
     
     /*----      Constructor       ----*/
     
     public GuildVoiceManager() {
+        cat = (Category) VoiceManager.Setting.CATEGORY.def;
         voice = new HashMap<Member, List<VoiceChannel>>();
         limit = (int)VoiceManager.Setting.LIMIT.def;
         user = (int)VoiceManager.Setting.USER_LIMIT.def;
     }
 
     /*----      Getters & Setters      ----*/
+    
+    public Category getCategory() { return cat; }
+
+    public void setCategory(Category cat) { this.cat = cat; }
     
     public int getUserLimit() { return user; }
 

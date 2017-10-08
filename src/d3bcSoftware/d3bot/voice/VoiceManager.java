@@ -20,6 +20,7 @@ import d3bcSoftware.d3bot.logging.Format;
 import d3bcSoftware.d3bot.logging.LogState;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.Permission;
+import net.dv8tion.jda.core.entities.Category;
 import net.dv8tion.jda.core.entities.Guild;
 import net.dv8tion.jda.core.entities.Member;
 import net.dv8tion.jda.core.entities.VoiceChannel;
@@ -38,7 +39,7 @@ public class VoiceManager {
     private final static String DATA_PATH = "data/", FILE = "voice.json";
     
     public enum Setting {
-        LIMIT(1, "limit"), USER_LIMIT(8, "user"), VOICE("%s's Voice", "voice");
+        CATEGORY(null, "category"), LIMIT(1, "limit"), USER_LIMIT(8, "user"), VOICE("%s's Voice", "voice");
         
         public String key;
         public Object def;
@@ -83,11 +84,15 @@ public class VoiceManager {
                     if(g != null) {
                         GuildVoiceManager mng = getManager(g);
                         
+                        // Load private voice limits.
                         if(guildSetting.containsKey(Setting.LIMIT.key))
                             mng.setLimit(((Long)guildSetting.get(Setting.LIMIT.key)).intValue());
                         if(guildSetting.containsKey(Setting.USER_LIMIT.key))
                             mng.setUserLimit(((Long)guildSetting.get(Setting.USER_LIMIT.key)).intValue());
+                        if(guildSetting.containsKey(Setting.CATEGORY.key))
+                            mng.setCategory(g.getCategoryById((String)guildSetting.get(Setting.CATEGORY.key)));
                         
+                        // Load private voice channels
                         if(guildSetting.containsKey(Setting.VOICE.key)) {
                             JSONObject members = (JSONObject) guildSetting.get(Setting.VOICE.key);
                             
@@ -126,12 +131,15 @@ public class VoiceManager {
                     privateVoices = new HashMap<Object, Object>();
             GuildVoiceManager mng = voices.get(g);
             
+            // Save private voice limits
             if(mng.getLimit() != (int)Setting.LIMIT.def)
                 voiceSettings.put(Setting.LIMIT.key, mng.getLimit());
             if(mng.getUserLimit() != (int)Setting.USER_LIMIT.def)
                 voiceSettings.put(Setting.USER_LIMIT.key, mng.getUserLimit());
+            if(mng.getCategory() != (Category) VoiceManager.Setting.CATEGORY.def)
+                voiceSettings.put(Setting.CATEGORY.key, mng.getCategory().getId());
             
-            
+            // Save private voice channels
             for(Entry<Member, List<VoiceChannel>> entry: mng.getPrivateVoices()) {
                 JSONArray vcs = new JSONArray();
                 
