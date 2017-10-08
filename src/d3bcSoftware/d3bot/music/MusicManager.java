@@ -234,7 +234,7 @@ public class MusicManager {
             TrackScheduler scheduler = mng.scheduler;
             
             // Disconnect
-            disconnect(g);
+            disconnect(g, mng);
             
             // Save all Flags
             if(scheduler.isShuffle())
@@ -401,7 +401,8 @@ public class MusicManager {
     
     /*----      Helpers       ----*/
     
-    public static void disconnect(Guild guild) {
+    public static void disconnect(Guild guild, GuildMusicManager mng) {
+        mng.player.setPaused(true);
         guild.getAudioManager().setSendingHandler(null);
         guild.getAudioManager().closeAudioConnection();
     }

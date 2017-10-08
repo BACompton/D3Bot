@@ -39,13 +39,14 @@ public class AutoDisconnect extends Thread{
             sleep(WAIT);
             
             synchronized (musicListener) {
-                MusicManager.disconnect(guild);
+                GuildMusicManager mng = musicListener.getMusicManager().getGuildMusicManager(guild);
+                MusicManager.disconnect(guild, mng);
                 
                 Bot.getLogger().guildLog(guild, 
                         LogState.INFO, 
                         String.format(DISCONNECT_LOG, guild.getAudioManager().getConnectedChannel().getName()));
                 
-                musicListener.getMusicManager().getGuildMusicManager(guild).scheduler.clear();
+               mng.scheduler.clear();
                 musicListener.remove(guild);
             }
         } catch (InterruptedException ignore) {}
